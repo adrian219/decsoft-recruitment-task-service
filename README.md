@@ -9,4 +9,4 @@ Bazę polecam postawić na dockerze:
 ## Wskazówki
 
 * Na starcie są tworzeni użytkownicy o loginach: admin, user (do obydwu jest hasło "password")
-* Mamy w systemie dwie role: "ADMIN" i "USER" - ale na froncie nie ma ukrywania przycisków (nie wszystkie RESTy może wykonywać użytkownik w roli "USER").
+* Mamy w systemie dwie role: "ADMIN" i "USER" - ale na froncie nie ma ukrywania akcji (nie wszystkie RESTy może wykonywać użytkownik w roli "USER").
