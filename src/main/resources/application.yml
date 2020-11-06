@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5333/decsoft
+    username: postgres
+    password: docker
+  jpa:
+    hibernate:
+      ddl-auto: update
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      enabled: true
+
+jwt:
+  config:
+    validTime: 36000
+    secret: decsoft-recruitment-task
+
+photo-store:
+  type: BLOB
