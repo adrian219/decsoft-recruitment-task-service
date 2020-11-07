@@ -9,13 +9,14 @@ import org.springframework.stereotype.Component;
 public class PhotoStoreFactory {
   private final PhotoRepository photoRepository;
   private final LobHelper lobHelper;
+  private final PhotoValidator photoValidator;
   private final PhotoStoreProperties properties;
 
   @Bean
   public StorePhotoService storePhotoService() {
     switch (properties.getType()) {
       case BLOB:
-        return new BlobStorePhotoService(photoRepository, PhotoStoreType.BLOB, lobHelper);
+        return new BlobStorePhotoService(photoRepository, lobHelper, photoValidator);
       case RESOURCE:
         return new ResourceStorePhotoService(photoRepository, PhotoStoreType.RESOURCE);
       default:

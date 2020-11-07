@@ -1,6 +1,9 @@
 package pl.com.decsoft.domain.addressbook;
 
+import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +27,21 @@ public class AddressBookServiceImpl implements AddressBookService {
   private final PhoneRepository phoneRepository;
   private final StorePhotoService storePhotoService;
   private final DeletePhotoService deletePhotoService;
+
+  @Override
+  public Page<AddressBookEntity> page(Optional<String> query, Pageable pageable) {
+    BooleanBuilder bb = new BooleanBuilder();
+
+    query.ifPresent(q -> bb.andAnyOf(
+        bb.or(QAddressBookEntity.addressBookEntity.firstName.containsIgnoreCase(q)),
+        bb.or(QAddressBookEntity.addressBookEntity.lastName.containsIgnoreCase(q)),
+        bb.or(QAddressBookEntity.addressBookEntity.email.containsIgnoreCase(q)),
+        bb.or(QAddressBookEntity.addressBookEntity.phones.any().number.containsIgnoreCase(q))));
+
+    return Optional.ofNullable(bb.getValue())
+        .map(predicate -> addressBookRepository.findAll(predicate, pageable))
+        .orElseGet(() -> addressBookRepository.findAll(pageable));
+  }
 
   @Override
   public AddressBookEntity create(CreateAddressBookDTO dto, Optional<MultipartFile> file) {

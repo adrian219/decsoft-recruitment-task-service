@@ -2,23 +2,21 @@ package pl.com.decsoft.domain.addressbook.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.com.decsoft.domain.addressbook.AddressBookEntity;
 import pl.com.decsoft.domain.addressbook.AddressBookRepository;
 import pl.com.decsoft.domain.addressbook.AddressBookService;
-import pl.com.decsoft.domain.addressbook.QAddressBookEntity;
 import pl.com.decsoft.domain.addressbook.photo.DeletePhotoService;
 import pl.com.decsoft.domain.addressbook.rest.dto.AddressBookDTO;
 import pl.com.decsoft.domain.addressbook.rest.dto.CreateAddressBookDTO;
 import pl.com.decsoft.domain.addressbook.rest.dto.EditAddressBookDTO;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -34,17 +32,7 @@ public class AddressBookController {
   @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
   @GetMapping
   public Page<AddressBookDTO> page(@RequestParam Optional<String> query, Pageable pageable) {
-    BooleanBuilder bb = new BooleanBuilder();
-
-    query.ifPresent(q -> bb.andAnyOf(
-        bb.or(QAddressBookEntity.addressBookEntity.firstName.containsIgnoreCase(q)),
-        bb.or(QAddressBookEntity.addressBookEntity.lastName.containsIgnoreCase(q)),
-        bb.or(QAddressBookEntity.addressBookEntity.email.containsIgnoreCase(q)),
-        bb.or(QAddressBookEntity.addressBookEntity.phones.any().number.containsIgnoreCase(q))));
-
-    return Optional.ofNullable(bb.getValue())
-        .map(predicate -> addressBookRepository.findAll(predicate, pageable))
-        .orElseGet(() -> addressBookRepository.findAll(pageable))
+    return addressBookService.page(query, pageable)
         .map(AddressBookEntity::toDTO);
   }
 
@@ -60,7 +48,11 @@ public class AddressBookController {
   @PostMapping
   public AddressBookDTO save(@RequestPart Optional<MultipartFile> file,
                              @RequestPart String dto) throws JsonProcessingException {
-    return addressBookService.create(objectMapper.readValue(dto, CreateAddressBookDTO.class), file).toDTO();
+
+    @Valid
+    CreateAddressBookDTO createAddressBookDTO = objectMapper.readValue(dto, CreateAddressBookDTO.class);
+
+    return addressBookService.create(createAddressBookDTO, file).toDTO();
   }
 
   @PreAuthorize("hasAuthority('ADMIN')")
@@ -68,7 +60,11 @@ public class AddressBookController {
   public AddressBookDTO edit(@PathVariable Long id,
                              @RequestPart Optional<MultipartFile> file,
                              @RequestPart String dto) throws JsonProcessingException {
-    return addressBookService.update(id, objectMapper.readValue(dto, EditAddressBookDTO.class), file).toDTO();
+
+    @Valid
+    EditAddressBookDTO editAddressBookDTO = objectMapper.readValue(dto, EditAddressBookDTO.class);
+
+    return addressBookService.update(id, editAddressBookDTO, file).toDTO();
   }
 
   @PreAuthorize("hasAuthority('ADMIN')")

@@ -15,6 +15,7 @@ import pl.com.decsoft.domain.addressbook.rest.dto.CreateAddressBookDTO;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,12 +32,15 @@ public class AddressBookEntity {
   @Column(name = "id")
   private Long id;
 
+  @NotNull
   @Column(name = "first_name")
   private String firstName;
 
+  @NotNull
   @Column(name = "last_name")
   private String lastName;
 
+  @NotNull
   @Email
   @Column(name = "email")
   private String email;
@@ -91,10 +95,11 @@ public class AddressBookEntity {
     return entity.update(dto.getFirstName(), dto.getLastName(), dto.getEmail(), phones);
   }
 
-  public AddressBookEntity update(String firstName, String lastName, String email, Set<PhoneEntity> phones) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
+  public AddressBookEntity update(@NotNull String firstName, @NotNull String lastName,
+                                  @NotNull String email, Set<PhoneEntity> phones) {
+    this.firstName = firstName.trim();
+    this.lastName = lastName.trim();
+    this.email = email.trim();
     updatePhones(phones);
 
     return this;

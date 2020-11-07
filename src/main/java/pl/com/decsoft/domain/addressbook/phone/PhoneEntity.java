@@ -15,6 +15,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 @Table(name = "t_phones")
@@ -78,7 +79,7 @@ public class PhoneEntity {
   private PhoneEntity(AddressBookEntity addressBook, PhoneType phoneType, String number) {
     this.addressBook = addressBook;
     this.phoneType = phoneType;
-    this.number = number;
+    this.number = Optional.ofNullable(number).map(String::trim).orElse(number);
   }
 
   public static PhoneEntity create(AddressBookEntity addressBook, PhoneDTO dto) {
