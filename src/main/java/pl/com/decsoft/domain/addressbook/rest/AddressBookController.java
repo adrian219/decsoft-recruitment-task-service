@@ -31,26 +31,21 @@ public class AddressBookController {
   private final DeletePhotoService deletePhotoService;
   private final ObjectMapper objectMapper;
 
-  private static final String LIKE_FIX = "%";
-
   @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
   @GetMapping
   public Page<AddressBookDTO> page(@RequestParam Optional<String> query, Pageable pageable) {
     BooleanBuilder bb = new BooleanBuilder();
 
     query.ifPresent(q -> bb.andAnyOf(
-        bb.or(QAddressBookEntity.addressBookEntity.firstName.like(transformQuery(q))),
-        bb.or(QAddressBookEntity.addressBookEntity.lastName.like(transformQuery(q))),
-        bb.or(QAddressBookEntity.addressBookEntity.email.like(transformQuery(q)))));
+        bb.or(QAddressBookEntity.addressBookEntity.firstName.containsIgnoreCase(q)),
+        bb.or(QAddressBookEntity.addressBookEntity.lastName.containsIgnoreCase(q)),
+        bb.or(QAddressBookEntity.addressBookEntity.email.containsIgnoreCase(q)),
+        bb.or(QAddressBookEntity.addressBookEntity.phones.any().number.containsIgnoreCase(q))));
 
     return Optional.ofNullable(bb.getValue())
         .map(predicate -> addressBookRepository.findAll(predicate, pageable))
         .orElseGet(() -> addressBookRepository.findAll(pageable))
         .map(AddressBookEntity::toDTO);
-  }
-
-  private String transformQuery(String q) {
-    return LIKE_FIX + q + LIKE_FIX;
   }
 
   @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
